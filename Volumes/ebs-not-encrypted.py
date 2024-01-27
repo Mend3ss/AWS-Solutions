@@ -86,11 +86,10 @@ def criar_planilha(volumes_nao_criptografados):
 if __name__ == "__main__":
     regiao = 'sa-east-1'  # Substitua pela região desejada, como 'us-east-1', 'sa-east-1', etc.
     volumes_nao_criptografados = obter_volumes_ebs_nao_criptografados(regiao)
-    
+
     if volumes_nao_criptografados:
         planilha = criar_planilha(volumes_nao_criptografados)
         planilha.save('volumes_nao_criptografados.xlsx')
         print("Planilha gerada com sucesso: volumes_nao_criptografados.xlsx")
     else:
         print("Nenhum volume EBS não criptografado encontrado.")
-
