@@ -4,10 +4,30 @@ import csv
 # Crie um objeto de cliente IAM
 iam_client = boto3.client('iam')
 
-# Obtenha uma lista de todos os usuários do IAM
-users = iam_client.list_users()
+# Marcador para a próxima paginação
+next_marker = None
 
-# Crie um arquivo Excel
+# Lista para armazenar todos os usuários
+all_users = []
+
+# Loop para iterar pelas páginas de resultados
+while True:
+    # Obtenha uma lista de usuários (até 100 por padrão)
+    if next_marker is None:
+        users = iam_client.list_users()
+    else:
+        users = iam_client.list_users(Marker=next_marker)
+
+    # Armazene os usuários da página atual
+    all_users.extend(users['Users'])
+
+    # Verifique se há mais páginas
+    next_marker = users.get('Marker')
+    if next_marker is None:
+        # Não há mais páginas, termine o loop
+        break
+
+# Crie um arquivo CSV
 with open('usuarios_iam_grupos_formatado.csv', 'w', newline='') as csvfile:
     writer = csv.writer(csvfile, delimiter=' ', quotechar='"', quoting=csv.QUOTE_MINIMAL)
 
@@ -15,7 +35,7 @@ with open('usuarios_iam_grupos_formatado.csv', 'w', newline='') as csvfile:
     writer.writerow(['Nome do usuário', 'ID do usuário', 'Grupos'])
 
     # Para cada usuário
-    for user in users['Users']:
+    for user in all_users:
         # Obtenha os grupos do usuário
         user_groups = iam_client.list_groups_for_user(UserName=user['UserName'])['Groups']
 
@@ -30,4 +50,3 @@ with open('usuarios_iam_grupos_formatado.csv', 'w', newline='') as csvfile:
         ])
 
 print('Arquivo "usuarios_iam_grupos_formatado.csv" criado com sucesso!')
-
